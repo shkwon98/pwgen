@@ -15,18 +15,29 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/sha3.h>
 
-const std::string RowString(const std::string &mac_with_key, const std::string &hash, const std::string &password)
+template <typename T>
+std::string IntToHexString(T i)
+{
+    std::stringstream stream;
+    stream << std::hex << i;
+    return stream.str();
+}
+
+const std::string RowString(const uint32_t &mac, const std::string &key, const std::string &hash,
+                            const std::string &password)
 {
     std::stringstream ss;
-    ss << mac_with_key << ", " << hash << ", " << password;
+
+    ss << std::setfill('0') << std::setw(6) << IntToHexString(mac) << key << ", " << hash << ", " << password;
+
     return ss.str();
 }
 
-std::stringstream CalculateHashes(int start, int end, const std::string &key)
+std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::string &key)
 {
     std::stringstream ss;
 
-    for (int i = start; i <= end; ++i)
+    for (auto i = start; i <= end; ++i)
     {
         const std::string mac_with_key = std::to_string(i) + key;
 
@@ -40,7 +51,7 @@ std::stringstream CalculateHashes(int start, int end, const std::string &key)
         encoder.Put(digest, sizeof(digest));
         encoder.MessageEnd();
 
-        ss << RowString(mac_with_key, output, "-") << std::endl;
+        ss << RowString(i, key, output, "-") << std::endl;
     }
 
     return ss;
@@ -48,51 +59,44 @@ std::stringstream CalculateHashes(int start, int end, const std::string &key)
 
 int main()
 {
-    auto key = std::string{ getpass("Enter a key: ") };
-
-    // SHA-3 해시 함수 초기화
-    CryptoPP::SHA3_256 sha3;
-
-    // 스레드 개수 설정
     auto thread_no = std::thread::hardware_concurrency();
 
-    // 각 스레드에 할당할 작업 범위 계산
-    auto range = 0x0FFFFF / thread_no;
-    auto start = 0;
-    auto end = range;
+    const auto &max_mac = 0x0FFFFFU;
+    const auto &range = max_mac / thread_no;
+    auto left_over = max_mac % thread_no;
 
-    // std::packaged_task container for each thread
-    auto task = std::vector<std::packaged_task<std::stringstream(int, int, std::string &, CryptoPP::SHA3_256 &)>>();
+    auto start_mac = 0U;
+    auto end_mac = range;
 
-    // 스레드 컨테이너 생성
-    auto threads = std::vector<std::thread>();
     auto futures = std::vector<std::future<std::stringstream>>();
+    auto threads = std::vector<std::thread>();
 
-    // 스레드 생성 및 작업 할당
+    auto key = std::string{ getpass("Enter a key: ") };
+
     for (auto i = 0U; i < thread_no; ++i)
     {
-        // Create a packaged_task with the CalculateHashes function
-        std::packaged_task<std::stringstream(int, int, std::string &, CryptoPP::SHA3_256 &)> task(CalculateHashes);
+        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, std::string &)>(CalculateHashes);
 
-        // Get the future associated with the packaged_task
         futures.emplace_back(task.get_future());
+        threads.emplace_back(std::thread(std::move(task), start_mac, end_mac, std::ref(key)));
 
-        // Start the thread and pass the packaged_task as an argument
-        threads.emplace_back(std::thread(std::move(task), start, end, std::ref(key)));
+        start_mac = end_mac + 1;
+        end_mac += range;
 
-        // Update the start and end values for the next thread
-        start = end + 1;
-        end += range;
+        if (i == thread_no - 2)
+        {
+            end_mac += left_over;
+        }
     }
 
-    // 스레드 완료 대기
     for (auto &thread : threads)
     {
         thread.join();
     }
 
     // 결과 파일에 출력
-    std::ofstream file("hashes.txt");
+    auto file = std::ofstream("hashes.txt");
+
     file << "MAC + key, Hash, Password" << std::endl;
     for (auto &future : futures)
     {
