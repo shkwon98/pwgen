@@ -10,7 +10,6 @@
 
 std::string GetPassword(const std::string &key)
 {
-    std::cout << "Key: " << key << std::endl;
     pwgen::SHA3Hasher hash_encoder(key);
 
     const auto &hash_bitset = hash_encoder.GetBitset();
