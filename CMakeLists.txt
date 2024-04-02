@@ -45,7 +45,8 @@ endif()
 
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
-    PRIVATE src/main.cpp)
+    PRIVATE src/main.cpp
+            src/sha3_encoder/sha3_encoder.cpp)
 target_include_directories(${PROJECT_NAME}
     PRIVATE include
             ${cryptopp_SOURCE_DIR}/include)
