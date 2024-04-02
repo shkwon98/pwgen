@@ -13,13 +13,10 @@ std::array<int, 48> kPrimeNumberTable = { 2,   3,   5,   7,   11,  13,  17,  19,
                                           59,  61,  67,  71,  73,  79,  83,  89,  97,  101, 103, 107, 109, 113, 127, 131,
                                           137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223 };
 
-const std::string RowString(const uint32_t &mac, const std::string &key, const std::string &hash,
-                            const std::string &password)
+const std::string ToHexString(uint32_t integer)
 {
     std::stringstream ss;
-
-    ss << std::setfill('0') << std::setw(6) << std::hex << std::uppercase << mac << key << ", " << hash << ", " << password;
-
+    ss << std::setfill('0') << std::setw(6) << std::hex << integer;
     return ss.str();
 }
 

@@ -55,5 +55,6 @@ target_compile_options(pwdgen
     INTERFACE -Wall
               -Wextra
               -Werror)
+add_library(pwdgen::pwdgen ALIAS pwdgen)
 
 add_subdirectory(examples)

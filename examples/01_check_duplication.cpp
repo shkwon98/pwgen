@@ -18,7 +18,8 @@ std::vector<std::string> GeneratePasswords(uint32_t start, uint32_t end, const s
 
     for (auto i = start; i <= end; ++i)
     {
-        const std::string mac_with_key = std::to_string(i) + key;
+        const auto &mac = pwgen::ToHexString(i);
+        const auto &mac_with_key = mac + key;
 
         pwgen::SHA3Hasher hash_encoder(mac_with_key);
 

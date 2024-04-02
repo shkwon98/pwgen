@@ -13,13 +13,14 @@
 #include "pwgen/sha3_hasher/sha3_hasher.h"
 #include "pwgen/util.h"
 
-std::stringstream GeneratePasswordTable(uint32_t start, uint32_t end, const std::string &key)
+std::stringstream GetPassword(uint32_t start, uint32_t end, const std::string &key)
 {
     std::stringstream ss;
 
     for (auto i = start; i <= end; ++i)
     {
-        const std::string mac_with_key = std::to_string(i) + key;
+        const auto &mac = pwgen::ToHexString(i);
+        const auto &mac_with_key = mac + key;
 
         pwgen::SHA3Hasher hash_encoder(mac_with_key);
 
@@ -31,7 +32,8 @@ std::stringstream GeneratePasswordTable(uint32_t start, uint32_t end, const std:
         pwgen::Base64Encoder password_encoder(password_bitset);
         const auto &password = password_encoder.GetEncodedBase64();
 
-        ss << pwgen::RowString(i, key, hash_string, password) << std::endl;
+        ss << std::setfill('0') << std::setw(6) << std::hex << mac << ", " << key << ", " << hash_string << ", " << password
+           << std::endl;
     }
 
     return ss;
@@ -60,7 +62,7 @@ int main(int argc, char *argv[])
 
     for (auto i = 0U; i < thread_no; ++i)
     {
-        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, const std::string &)>(GeneratePasswordTable);
+        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, const std::string &)>(GetPassword);
         futures.emplace_back(task.get_future());
         threads.emplace_back(std::thread(std::move(task), start_mac, end_mac, std::ref(suffix)));
 
@@ -79,7 +81,7 @@ int main(int argc, char *argv[])
     }
 
     auto file = std::ofstream(argv[1]);
-    file << "MAC + key, Hash, Password" << std::endl;
+    file << "MAC, key, Hash, Password" << std::endl;
     for (auto &future : futures)
     {
         file << future.get().str();
