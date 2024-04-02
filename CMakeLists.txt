@@ -40,7 +40,7 @@ file(MAKE_DIRECTORY ${cryptopp_SOURCE_DIR}/include/cryptopp)
 file(COPY ${CRYPTOPP_HEADERS} DESTINATION ${cryptopp_SOURCE_DIR}/include/cryptopp)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
 add_executable(${PROJECT_NAME})
