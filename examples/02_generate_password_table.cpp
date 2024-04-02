@@ -2,7 +2,6 @@
 #include <fstream>
 #include <future>
 #include <iostream>
-#include <set>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -14,7 +13,7 @@
 #include "pwgen/sha3_hasher/sha3_hasher.h"
 #include "pwgen/util.h"
 
-std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::string &key, std::vector<std::string> &passwords)
+std::stringstream GeneratePasswordTable(uint32_t start, uint32_t end, const std::string &key)
 {
     std::stringstream ss;
 
@@ -32,39 +31,38 @@ std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::strin
         pwgen::Base64Encoder password_encoder(password_bitset);
         const auto &password = password_encoder.GetEncodedBase64();
 
-        passwords.push_back(password);
-
         ss << pwgen::RowString(i, key, hash_string, password) << std::endl;
     }
 
     return ss;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    auto thread_no = std::thread::hardware_concurrency();
+    if (argc != 2)
+    {
+        std::cerr << "Usage: " << argv[0] << " <output_file>" << std::endl;
+        return 1;
+    }
 
     const auto &max_mac = 0xFFFFFFU;
+    const auto &thread_no = std::thread::hardware_concurrency();
     const auto &range = max_mac / thread_no;
-    auto left_over = max_mac % thread_no;
+    const auto &left_over = max_mac % thread_no;
+
+    auto futures = std::vector<std::future<std::stringstream>>();
+    auto threads = std::vector<std::thread>();
+
+    auto suffix = std::string(getpass("Enter a key: "));
 
     auto start_mac = 0U;
     auto end_mac = range;
 
-    auto futures = std::vector<std::future<std::stringstream>>();
-    auto threads = std::vector<std::thread>();
-    auto password_lists = std::vector<std::vector<std::string>>(thread_no);
-
-    auto key = std::string{ getpass("Enter a key: ") };
-
     for (auto i = 0U; i < thread_no; ++i)
     {
-        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, std::string &, std::vector<std::string> &)>(
-            CalculateHashes);
-
+        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, const std::string &)>(GeneratePasswordTable);
         futures.emplace_back(task.get_future());
-        password_lists[i].reserve(end_mac - start_mac + 1);
-        threads.emplace_back(std::thread(std::move(task), start_mac, end_mac, std::ref(key), std::ref(password_lists[i])));
+        threads.emplace_back(std::thread(std::move(task), start_mac, end_mac, std::ref(suffix)));
 
         start_mac = end_mac + 1;
         end_mac += range;
@@ -80,29 +78,13 @@ int main()
         thread.join();
     }
 
-    std::set<std::string> password_set;
-    uint32_t duplicate_count = 0;
-    for (const auto &passwords : password_lists)
-    {
-        for (const auto &password : passwords)
-        {
-            if (!password_set.insert(password).second)
-            {
-                ++duplicate_count;
-            }
-        }
-    }
-
-    std::cout << "Duplicate password count: " << duplicate_count << std::endl;
-
-    auto file = std::ofstream("hashes.txt");
-
+    auto file = std::ofstream(argv[1]);
     file << "MAC + key, Hash, Password" << std::endl;
     for (auto &future : futures)
     {
         file << future.get().str();
     }
-    file.close();
 
+    file.close();
     return 0;
 }
