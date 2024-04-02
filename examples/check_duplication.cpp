@@ -44,7 +44,7 @@ int main()
 {
     auto thread_no = std::thread::hardware_concurrency();
 
-    const auto &max_mac = 0xFFFFFU;
+    const auto &max_mac = 0xFFFFFFU;
     const auto &range = max_mac / thread_no;
     auto left_over = max_mac % thread_no;
 

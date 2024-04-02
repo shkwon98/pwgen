@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(pwd-generator
+project(pwdgen
         LANGUAGES CXX)
 
 include(FetchContent)
@@ -43,17 +43,17 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_executable(${PROJECT_NAME})
-target_sources(${PROJECT_NAME}
-    PRIVATE src/main.cpp)
-target_include_directories(${PROJECT_NAME}
-    PRIVATE include
-            ${cryptopp_SOURCE_DIR}/include)
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE cryptopp-static)
-target_compile_features(${PROJECT_NAME}
-    PRIVATE cxx_std_17)
-target_compile_options(${PROJECT_NAME}
-    PRIVATE -Wall
-            -Wextra
-            -Werror)
+add_library(pwdgen INTERFACE)
+target_include_directories(pwdgen
+    INTERFACE ${cryptopp_SOURCE_DIR}/include
+              include)
+target_link_libraries(pwdgen
+    INTERFACE cryptopp-static)
+target_compile_features(pwdgen
+    INTERFACE cxx_std_17)
+target_compile_options(pwdgen
+    INTERFACE -Wall
+              -Wextra
+              -Werror)
+
+add_subdirectory(examples)
