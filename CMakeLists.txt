@@ -39,6 +39,10 @@ file(GLOB CRYPTOPP_HEADERS "${cryptopp_SOURCE_DIR}/*.h")
 file(MAKE_DIRECTORY ${cryptopp_SOURCE_DIR}/include/cryptopp)
 file(COPY ${CRYPTOPP_HEADERS} DESTINATION ${cryptopp_SOURCE_DIR}/include/cryptopp)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
     PRIVATE src/main.cpp)
@@ -46,7 +50,7 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE include
             ${cryptopp_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE cryptopp-shared)
+    PRIVATE cryptopp-static)
 target_compile_features(${PROJECT_NAME}
     PRIVATE cxx_std_17)
 target_compile_options(${PROJECT_NAME}
