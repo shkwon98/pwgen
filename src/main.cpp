@@ -1,8 +1,6 @@
 // standard headers
-#include <bitset>
 #include <fstream>
 #include <future>
-#include <iomanip>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -11,50 +9,10 @@
 #include <unistd.h>
 #include <vector>
 
+// project headers
 #include "pwgen/common.h"
 #include "pwgen/sha3_encoder/sha3_encoder.h"
-
-const std::string RowString(const uint32_t &mac, const std::string &key, const std::string &hash,
-                            const std::string &password)
-{
-    std::stringstream ss;
-
-    ss << std::setfill('0') << std::setw(6) << std::hex << std::uppercase << mac << key << ", " << hash << ", " << password;
-
-    return ss.str();
-}
-
-template <size_t N>
-std::string ToBase64(std::bitset<N> &value)
-{
-    std::string result;
-
-    for (auto i = 0U; i < N; i += 6)
-    {
-        auto index = 0;
-        for (auto j = 0; j < 6; ++j)
-        {
-            index <<= 1;
-            index |= value[i + j];
-        }
-
-        result.push_back(kBase64Table[index]);
-    }
-
-    return result;
-}
-
-template <size_t N>
-std::bitset<N> ExtractBits(const std::bitset<256> &sha256_bitset)
-{
-    auto bitset = std::bitset<N>();
-    for (auto i = 0U; i < N; ++i)
-    {
-        bitset.set(i, sha256_bitset.test(kPrimeNumberTable[i]));
-    }
-
-    return bitset;
-}
+#include "pwgen/util.h"
 
 std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::string &key, std::vector<std::string> &passwords)
 {
@@ -70,12 +28,12 @@ std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::strin
         const auto &hash_string = hash_encoder.GetHexString();
         const auto &hash_bitset = hash_encoder.GetBitset();
 
-        auto password_bitset = ExtractBits<48>(hash_bitset);
-        const auto &password = ToBase64(password_bitset);
+        auto password_bitset = pwgen::ExtractBits<48>(hash_bitset);
+        const auto &password = pwgen::ToBase64(password_bitset);
 
         passwords.push_back(password);
 
-        ss << RowString(i, key, hash_string, password) << std::endl;
+        ss << pwgen::RowString(i, key, hash_string, password) << std::endl;
     }
 
     return ss;
