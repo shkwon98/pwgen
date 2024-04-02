@@ -1,4 +1,4 @@
-# pwd-generator
+# pwgen: Password Generator
 
 ## Table of Contents
 
