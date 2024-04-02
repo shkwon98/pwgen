@@ -10,8 +10,8 @@
 #include <vector>
 
 // project headers
-#include "pwgen/common.h"
-#include "pwgen/sha3_encoder/sha3_encoder.h"
+#include "pwgen/base64_encoder/base64_encoder.h"
+#include "pwgen/sha3_hasher/sha3_hasher.h"
 #include "pwgen/util.h"
 
 std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::string &key, std::vector<std::string> &passwords)
@@ -22,14 +22,15 @@ std::stringstream CalculateHashes(uint32_t start, uint32_t end, const std::strin
     {
         const std::string mac_with_key = std::to_string(i) + key;
 
-        SHA3Encoder hash_encoder(mac_with_key);
+        pwgen::SHA3Hasher hash_encoder(mac_with_key);
 
-        const auto &digest = hash_encoder.GetDigest();
         const auto &hash_string = hash_encoder.GetHexString();
         const auto &hash_bitset = hash_encoder.GetBitset();
 
         auto password_bitset = pwgen::ExtractBits<48>(hash_bitset);
-        const auto &password = pwgen::ToBase64(password_bitset);
+
+        pwgen::Base64Encoder password_encoder(password_bitset);
+        const auto &password = password_encoder.GetEncodedBase64();
 
         passwords.push_back(password);
 
@@ -43,7 +44,7 @@ int main()
 {
     auto thread_no = std::thread::hardware_concurrency();
 
-    const auto &max_mac = 0xFFFFFFU;
+    const auto &max_mac = 0xFFFFFU;
     const auto &range = max_mac / thread_no;
     auto left_over = max_mac % thread_no;
 
