@@ -19,40 +19,12 @@
 #include "pwgen/common.h"
 #include "pwgen/sha3_encoder/sha3_encoder.h"
 
-// Get hex string and convert it into bit vector
-std::vector<bool> HexToBits(const std::string &hex_string)
-{
-    auto bit_vector = std::vector<bool>();
-    bit_vector.reserve(hex_string.size() * 4);
-
-    for (auto i = 0U; i < hex_string.size(); i += 2)
-    {
-        auto byte = std::stoi(hex_string.substr(i, 2), nullptr, 16);
-        auto byte_bits = std::bitset<8>(byte);
-
-        for (auto j = 0U; j < byte_bits.size(); ++j)
-        {
-            bit_vector.push_back(byte_bits.test(j));
-        }
-    }
-
-    return bit_vector;
-}
-
-template <typename T>
-std::string IntToHexString(T i)
-{
-    std::stringstream stream;
-    stream << std::hex << i;
-    return stream.str();
-}
-
 const std::string RowString(const uint32_t &mac, const std::string &key, const std::string &hash,
                             const std::string &password)
 {
     std::stringstream ss;
 
-    ss << std::setfill('0') << std::setw(6) << IntToHexString(mac) << key << ", " << hash << ", " << password;
+    ss << std::setfill('0') << std::setw(6) << std::hex << std::uppercase << mac << key << ", " << hash << ", " << password;
 
     return ss.str();
 }

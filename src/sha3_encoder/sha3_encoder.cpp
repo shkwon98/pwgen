@@ -1,4 +1,4 @@
-#include "pwdgen/sha3_encoder/sha3_encoder.h"
+#include "pwgen/sha3_encoder/sha3_encoder.h"
 
 SHA3Encoder::SHA3Encoder(const std::string &input_string)
     : encoder_(new CryptoPP::StringSink(output_string_))
