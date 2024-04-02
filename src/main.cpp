@@ -11,11 +11,6 @@
 #include <unistd.h>
 #include <vector>
 
-// Crypto++ headers
-#include <cryptopp/base64.h>
-#include <cryptopp/cryptlib.h>
-#include <cryptopp/filters.h>
-
 #include "pwgen/common.h"
 #include "pwgen/sha3_encoder/sha3_encoder.h"
 
