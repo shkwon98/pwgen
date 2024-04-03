@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(pwdgen
+project(pwgen
         LANGUAGES CXX)
 
 include(FetchContent)
@@ -43,18 +43,18 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_library(pwdgen INTERFACE)
-target_include_directories(pwdgen
+add_library(pwgen INTERFACE)
+target_include_directories(pwgen
     INTERFACE ${cryptopp_SOURCE_DIR}/include
               include)
-target_link_libraries(pwdgen
+target_link_libraries(pwgen
     INTERFACE cryptopp-static)
-target_compile_features(pwdgen
+target_compile_features(pwgen
     INTERFACE cxx_std_17)
-target_compile_options(pwdgen
+target_compile_options(pwgen
     INTERFACE -Wall
               -Wextra
               -Werror)
-add_library(pwdgen::pwdgen ALIAS pwdgen)
+add_library(pwgen::pwgen ALIAS pwgen)
 
 add_subdirectory(examples)
