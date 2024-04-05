@@ -12,7 +12,7 @@ endif()
 
 add_library(pwgen INTERFACE)
 target_include_directories(pwgen
-    INTERFACE ${cryptopp_SOURCE_DIR}/include
+    INTERFACE ${CRYPTOPP_INCLUDE_DIR}
               include)
 target_link_libraries(pwgen
     INTERFACE cryptopp)
