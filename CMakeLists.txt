@@ -19,9 +19,8 @@ target_link_libraries(pwgen
 target_compile_features(pwgen
     INTERFACE cxx_std_17)
 target_compile_options(pwgen
-    INTERFACE -Wall
-              -Wextra
-              -Werror)
+    INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+              $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>)
 add_library(pwgen::pwgen ALIAS pwgen)
 
 add_subdirectory(examples)

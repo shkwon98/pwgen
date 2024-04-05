@@ -5,15 +5,49 @@
 #include <sstream>
 #include <string>
 #include <thread>
-#include <unistd.h>
 #include <vector>
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <unistd.h>
+#endif
 
 // project headers
 #include "pwgen/base64_encoder/base64_encoder.h"
 #include "pwgen/sha3_hasher/sha3_hasher.h"
 #include "pwgen/util.h"
 
-std::stringstream GetPassword(uint32_t start, uint32_t end, const std::string &key)
+static std::string GetSuffixKey()
+{
+#ifdef _WIN32
+    std::cout << "Enter a suffix key: ";
+
+    std::string password;
+    int ch;
+    while ((ch = _getch()) != '\r' && ch != '\n')
+    {
+        if (ch == '\b')
+        { // Handle backspace
+            if (!password.empty())
+            {
+                std::cout << "\b \b"; // Erase the character from console
+                password.pop_back();
+            }
+        }
+        else
+        {
+            password.push_back(static_cast<char>(ch));
+            std::cout << "*"; // Print asterisk instead of actual character
+        }
+    }
+    std::cout << std::endl;
+    return password;
+#else
+    return getpass("Enter a suffix key: ");
+#endif
+}
+
+static std::stringstream GetPasswordTable(uint32_t start, uint32_t end, const std::string &key)
 {
     std::stringstream ss;
 
@@ -55,14 +89,14 @@ int main(int argc, char *argv[])
     auto futures = std::vector<std::future<std::stringstream>>();
     auto threads = std::vector<std::thread>();
 
-    auto suffix = std::string(getpass("Enter a key: "));
+    auto suffix = GetSuffixKey();
 
     auto start_mac = 0U;
     auto end_mac = range;
 
     for (auto i = 0U; i < thread_no; ++i)
     {
-        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, const std::string &)>(GetPassword);
+        auto task = std::packaged_task<std::stringstream(uint32_t, uint32_t, const std::string &)>(GetPasswordTable);
         futures.emplace_back(task.get_future());
         threads.emplace_back(std::thread(std::move(task), start_mac, end_mac, std::ref(suffix)));
 

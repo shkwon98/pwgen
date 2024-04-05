@@ -8,7 +8,7 @@
 #include "pwgen/sha3_hasher/sha3_hasher.h"
 #include "pwgen/util.h"
 
-std::string GetPassword(const std::string &key)
+static std::string GetPassword(const std::string &key)
 {
     pwgen::SHA3Hasher hash_encoder(key);
 

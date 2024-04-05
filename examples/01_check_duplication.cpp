@@ -4,15 +4,49 @@
 #include <set>
 #include <string>
 #include <thread>
-#include <unistd.h>
 #include <vector>
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <unistd.h>
+#endif
 
 // project headers
 #include "pwgen/base64_encoder/base64_encoder.h"
 #include "pwgen/sha3_hasher/sha3_hasher.h"
 #include "pwgen/util.h"
 
-std::vector<std::string> GeneratePasswords(uint32_t start, uint32_t end, const std::string &key)
+static std::string GetSuffixKey()
+{
+#ifdef _WIN32
+    std::cout << "Enter a suffix key: ";
+
+    std::string password;
+    int ch;
+    while ((ch = _getch()) != '\r' && ch != '\n')
+    {
+        if (ch == '\b')
+        { // Handle backspace
+            if (!password.empty())
+            {
+                std::cout << "\b \b"; // Erase the character from console
+                password.pop_back();
+            }
+        }
+        else
+        {
+            password.push_back(static_cast<char>(ch));
+            std::cout << "*"; // Print asterisk instead of actual character
+        }
+    }
+    std::cout << std::endl;
+    return password;
+#else
+    return getpass("Enter a suffix key: ");
+#endif
+}
+
+static std::vector<std::string> GeneratePasswords(uint32_t start, uint32_t end, const std::string &key)
 {
     std::vector<std::string> passwords;
 
@@ -23,7 +57,6 @@ std::vector<std::string> GeneratePasswords(uint32_t start, uint32_t end, const s
 
         pwgen::SHA3Hasher hash_encoder(mac_with_key);
 
-        const auto &hash_string = hash_encoder.GetHexString();
         const auto &hash_bitset = hash_encoder.GetBitset();
 
         auto password_bitset = pwgen::ExtractBits<48>(hash_bitset);
@@ -48,7 +81,7 @@ int main(void)
     auto futures = std::vector<std::future<std::vector<std::string>>>();
     auto threads = std::vector<std::thread>();
 
-    auto suffix = std::string(getpass("Enter a key: "));
+    auto suffix = GetSuffixKey();
     auto start_mac = 0U;
     auto end_mac = range;
 
