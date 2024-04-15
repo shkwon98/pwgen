@@ -1,7 +1,5 @@
 # Pwgen - C++ Password Generation Library
 
----
-
 ## Table of Contents
 
 - [Pwgen - C++ Password Generation Library](#pwgen---c-password-generation-library)
