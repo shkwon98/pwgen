@@ -13,6 +13,7 @@
     - [Build from source](#build-from-source)
       - [System-wide installation](#system-wide-installation)
       - [Local installation](#local-installation)
+    - [Package manager (Not supported yet)](#package-manager-not-supported-yet)
   - [Usage ](#usage-)
 
 ## About <a name = "about"></a>
@@ -96,6 +97,10 @@ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=<path_to_install>
 cmake --build build
 cmmake --install build
 ```
+
+### Package manager (Not supported yet)
+
+Pwgen might be available in package managers like `vcpkg` or `conan` in the future.
 
 ## Usage <a name = "usage"></a>
 
