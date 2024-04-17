@@ -1,21 +1,20 @@
-# Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+set(THIRD_PARTY_PATH "${CMAKE_CURRENT_BINARY_DIR}/_deps"
+    CACHE STRING "A path setting third party libraries download & build directories.")
+set(THIRD_PARTY_CACHE_PATH "${CMAKE_CURRENT_SOURCE_DIR}"
+    CACHE STRING "A path cache third party source code to avoid repeated download.")
+
+set(THIRD_PARTY_BUILD_TYPE Release)
+
+if(${CMAKE_VERSION} VERSION_GREATER "3.5.2")
+    set(SHALLOW_CLONE "GIT_SHALLOW TRUE") # adds --depth=1 arg to git clone of External_Projects
+endif()
+
+########################### include cryptopp according to flags ###############################
 
 include(ExternalProject)
 
 set(CRYPTOPP_PREFIX_DIR  ${THIRD_PARTY_PATH}/cryptopp)
-set(CRYPTOPP_INSTALL_DIR ${THIRD_PARTY_PATH}/install/cryptopp)
+set(CRYPTOPP_INSTALL_DIR ${CRYPTOPP_PREFIX_DIR}/install)
 set(CRYPTOPP_INCLUDE_DIR "${CRYPTOPP_INSTALL_DIR}/include" CACHE PATH "cryptopp include directory." FORCE)
 set(CRYPTOPP_REPOSITORY  https://github.com/weidai11/cryptopp.git)
 set(CRYPTOPP_TAG         CRYPTOPP_8_2_0)
